@@ -286,6 +286,7 @@ export async function finalizeBugReportUpload(input: {
         debugger: createEmptyDebuggerPersistence(),
         id: existingReport.id,
         shareUrl: `/s/${existingReport.id}`,
+        submissionStatus: existingReport.submissionStatus,
         warnings: [],
       }
     }
