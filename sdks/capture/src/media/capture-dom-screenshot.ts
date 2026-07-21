@@ -1,10 +1,12 @@
 import { reportNonFatalError } from "@crikket/shared/lib/errors"
 import { domToBlob } from "modern-screenshot"
 
-const DOM_CAPTURE_TIMEOUT_MS = 15_000
+const DOM_CAPTURE_TIMEOUT_MS = 8000
 // Safari and Firefox decode cloned images lazily; a delay between canvas draws
 // keeps them from rendering blank where an image had not finished decoding.
-const DOM_CAPTURE_DRAW_IMAGE_INTERVAL_MS = 100
+// Kept small because it is paid per image and dominates capture time on
+// image-heavy pages.
+const DOM_CAPTURE_DRAW_IMAGE_INTERVAL_MS = 20
 // WebKit caps canvas area far below the browser default (unlimited). A viewport
 // is well within that cap, but keep a bound as a safety net against extreme
 // devicePixelRatio values on some devices.
@@ -46,6 +48,9 @@ export async function captureDomScreenshot(): Promise<Blob> {
     timeout: DOM_CAPTURE_TIMEOUT_MS,
     width: viewportWidth,
     height: viewportHeight,
+    // Downloading and embedding web fonts is the slowest step and needless for
+    // a bug screenshot — the system fallback font conveys the layout just fine.
+    font: false,
     style: {
       transform: `translate(${-window.scrollX}px, ${-window.scrollY}px)`,
       transformOrigin: "top left",
