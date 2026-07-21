@@ -340,12 +340,10 @@
     "sdks/capture": {
       "name": "@crikket-io/capture",
       "version": "0.1.1",
-      "dependencies": {
-        "@crikket/capture-core": "workspace:*",
-        "@crikket/shared": "workspace:*",
-      },
       "devDependencies": {
+        "@crikket/capture-core": "workspace:*",
         "@crikket/config": "workspace:*",
+        "@crikket/shared": "workspace:*",
         "@tailwindcss/postcss": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
