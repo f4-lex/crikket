@@ -5,9 +5,9 @@ const DOM_CAPTURE_TIMEOUT_MS = 15_000
 // Safari and Firefox decode cloned images lazily; a delay between canvas draws
 // keeps them from rendering blank where an image had not finished decoding.
 const DOM_CAPTURE_DRAW_IMAGE_INTERVAL_MS = 100
-// WebKit caps canvas area far below the browser default (unlimited). A full-page
-// capture on iOS at a high pixel ratio silently produces a blank canvas above
-// that cap, so bound both the edge size and the scale.
+// WebKit caps canvas area far below the browser default (unlimited). A viewport
+// is well within that cap, but keep a bound as a safety net against extreme
+// devicePixelRatio values on some devices.
 const DOM_CAPTURE_MAX_CANVAS_SIZE = 8192
 const DOM_CAPTURE_MAX_SCALE = 2
 // 1x1 transparent GIF — modern-screenshot's own default for images that fail to
@@ -21,6 +21,10 @@ const TRANSPARENT_COLOR_PATTERN = /(?:transparent|rgba?\([^)]*,\s*0\s*\))/i
 // reproduces the DOM, not a pixel-accurate capture: cross-origin media and some
 // CSS effects render approximately.
 //
+// Captures only the current viewport (matching what getDisplayMedia grabs), not
+// the whole page: the clone is offset by the scroll position and clipped to the
+// viewport box. This also keeps the render fast on long pages.
+//
 // Resolves with a PNG blob. Rejects if the document root is unavailable or the
 // underlying render times out. Assets that fail to load do not reject; they are
 // reported and left blank so the rest of the capture still succeeds.
@@ -30,6 +34,9 @@ export async function captureDomScreenshot(): Promise<Blob> {
     throw new Error("No document is available for screenshot capture.")
   }
 
+  const viewportWidth = window.innerWidth
+  const viewportHeight = window.innerHeight
+
   return await domToBlob(target, {
     type: "image/png",
     backgroundColor: resolveBackgroundColor(target),
@@ -37,6 +44,12 @@ export async function captureDomScreenshot(): Promise<Blob> {
     maximumCanvasSize: DOM_CAPTURE_MAX_CANVAS_SIZE,
     drawImageInterval: DOM_CAPTURE_DRAW_IMAGE_INTERVAL_MS,
     timeout: DOM_CAPTURE_TIMEOUT_MS,
+    width: viewportWidth,
+    height: viewportHeight,
+    style: {
+      transform: `translate(${-window.scrollX}px, ${-window.scrollY}px)`,
+      transformOrigin: "top left",
+    },
     fetch: {
       placeholderImage: (cloned) => {
         reportNonFatalError(
