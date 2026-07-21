@@ -1,3 +1,4 @@
+import { reportNonFatalError } from "@crikket/shared/lib/errors"
 import {
   assertBrowserTabSurface,
   canvasToBlob,
@@ -6,7 +7,28 @@ import {
   requestDisplayStream,
 } from "./display-capture"
 
+async function loadDomScreenshot(): Promise<Blob> {
+  // The fallback ships as a separate chunk; a failed load (stale deploy, CSP,
+  // dropped network) surfaces as an opaque module error, so translate only the
+  // import failure — a failure inside the capture keeps its own message.
+  let captureDomScreenshot: typeof import("./capture-dom-screenshot").captureDomScreenshot
+  try {
+    ;({ captureDomScreenshot } = await import("./capture-dom-screenshot"))
+  } catch (error) {
+    reportNonFatalError("capture-screenshot:load-dom-fallback", error)
+    throw new Error(
+      "Screenshot capture is temporarily unavailable. Please reload the page and try again."
+    )
+  }
+
+  return captureDomScreenshot()
+}
+
 export async function captureScreenshot(): Promise<Blob> {
+  if (!navigator.mediaDevices?.getDisplayMedia) {
+    return loadDomScreenshot()
+  }
+
   const stream = await requestDisplayStream(false)
   assertBrowserTabSurface(stream)
   const video = document.createElement("video")

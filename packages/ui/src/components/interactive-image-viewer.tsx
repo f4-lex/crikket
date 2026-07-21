@@ -294,7 +294,7 @@ export function InteractiveImageViewer({
         className={
           compact
             ? "relative w-full overflow-hidden text-left"
-            : "relative flex max-h-[min(75vh,calc(100vh-9rem))] w-full max-w-full items-center justify-center overflow-hidden rounded-lg text-left"
+            : "relative flex h-[min(75vh,calc(100vh-9rem))] w-full max-w-full items-center justify-center overflow-hidden rounded-lg text-left"
         }
         onDoubleClick={() => {
           updateZoom((currentZoom) =>
@@ -319,7 +319,7 @@ export function InteractiveImageViewer({
           className={
             compact
               ? "h-auto w-full select-none object-contain"
-              : "h-auto max-h-full w-auto max-w-full select-none rounded-lg object-contain shadow-sm"
+              : "h-full max-h-full w-full max-w-full select-none rounded-lg object-contain shadow-sm"
           }
           draggable={false}
           src={src}
