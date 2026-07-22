@@ -1,12 +1,10 @@
 name: Publish Packages
 
+# Manual-only in this fork: we do not publish to npm (the @crikket-io/capture
+# package name belongs to upstream, and no npm credentials are configured) and
+# consume the SDK via a local tarball instead. Left dispatchable in case the
+# upstream release flow is ever needed.
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
   workflow_dispatch:
 
 permissions:
