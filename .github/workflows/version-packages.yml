@@ -17,6 +17,12 @@ concurrency:
 jobs:
   version:
     runs-on: ubuntu-latest
+    # The release commit runs through husky's pre-commit hook, which builds the
+    # whole monorepo and fails on apps/web without its NEXT_PUBLIC_* env. Skip
+    # git hooks for the whole job: this is an automated version bump, and the
+    # real checks run as their own CI jobs.
+    env:
+      HUSKY: "0"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
